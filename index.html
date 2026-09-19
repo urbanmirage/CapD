@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SnapPage PDF Studio</title>
+<style>
+  :root{
+    --bg:#0b1020;
+    --panel:#11182b;
+    --panel2:#171f35;
+    --panel3:#0f1527;
+    --line:#29334f;
+    --text:#f5f7fb;
+    --muted:#9ba7bf;
+    --accent:#6ea8ff;
+    --accent2:#8b7cff;
+    --danger:#ff627d;
+    --good:#45d3a2;
+    --shadow:0 16px 50px rgba(0,0,0,.35);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(110,168,255,.11), transparent 32%),
+      radial-gradient(circle at 100% 20%, rgba(139,124,255,.08), transparent 28%),
+      var(--bg);
+    color:var(--text);
+    overflow:hidden;
+  }
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+  .app{height:100%;display:flex;flex-direction:column}
+  header{
+    height:72px;flex:0 0 72px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 20px;border-bottom:1px solid var(--line);background:rgba(10,15,30,.8);backdrop-filter:blur(14px);
+  }
+  .brand{display:flex;gap:12px;align-items:center}
+  .brandMark{
+    width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 22px rgba(87,122,255,.3);
+    font-size:20px;font-weight:900
+  }
+  .brandText{font-weight:800;letter-spacing:.2px}
+  .brandSub{font-size:11px;color:var(--muted);margin-top:2px}
+  .headerActions{display:flex;align-items:center;gap:8px}
+  .pill{
+    padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.03);
+    color:var(--muted);font-size:12px
+  }
+  .btn{
+    border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 13px;border-radius:12px;
+    transition:.16s ease;display:inline-flex;align-items:center;gap:8px;justify-content:center
+  }
+  .btn:hover{transform:translateY(-1px);border-color:#3d4c73;background:var(--panel2)}
+  .btn.primary{background:linear-gradient(135deg,#5e9cff,#7b68ff);border-color:transparent}
+  .btn.primary:hover{filter:brightness(1.07)}
+  .btn.danger{color:#ffd8df;border-color:rgba(255,98,125,.35);background:rgba(255,98,125,.08)}
+  .btn.ghost{background:transparent}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .main{min-height:0;flex:1;display:grid;grid-template-columns:290px 1fr}
+  aside{
+    min-width:0;border-right:1px solid var(--line);background:rgba(10,15,28,.74);padding:16px;overflow:auto
+  }
+  .navTitle{font-size:11px;text-transform:uppercase;color:#72819f;letter-spacing:1px;padding:4px 8px 9px}
+  .navBtn{
+    width:100%;border:1px solid transparent;background:transparent;color:#cdd6e9;border-radius:13px;padding:12px 13px;
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:6px
+  }
+  .navBtn:hover{background:rgba(255,255,255,.035)}
+  .navBtn.active{background:linear-gradient(180deg,rgba(110,168,255,.14),rgba(139,124,255,.07));border-color:#314567;color:#fff}
+  .navLeft{display:flex;align-items:center;gap:10px}
+  .navIcon{font-size:17px;width:20px;text-align:center}
+  .count{font-size:11px;color:#aab6ce;background:#202b45;border-radius:999px;padding:3px 8px}
+  .sideCard{
+    margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015))
+  }
+  .sideCard h4{margin:0 0 10px;font-size:12px}
+  .sideCard p{margin:6px 0;font-size:12px;color:var(--muted);line-height:1.45}
+  .sideStat{display:flex;justify-content:space-between;margin-top:9px;font-size:12px}
+  .sideStat b{color:#fff}
+  section.content{min-width:0;min-height:0;display:flex;flex-direction:column}
+  .toolbar{
+    display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:rgba(11,16,32,.55);
+    flex-wrap:wrap
+  }
+  .toolbar .spacer{flex:1}
+  .select{
+    border:1px solid var(--line);background:var(--panel);color:var(--text);padding:9px 11px;border-radius:11px
+  }
+  .viewSwitch{display:flex;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:11px}
+  .viewSwitch button{border:0;background:transparent;color:#9ca9c2;border-radius:8px;padding:7px 10px}
+  .viewSwitch button.active{background:#25314e;color:#fff}
+  .workspace{min-height:0;flex:1;overflow:auto;padding:18px}
+  .dashboard{max-width:1500px;margin:0 auto}
+  .hero{
+    border:1px solid var(--line);border-radius:20px;padding:18px 20px;background:
+      linear-gradient(135deg,rgba(110,168,255,.09),rgba(139,124,255,.05)),
+      var(--panel);box-shadow:var(--shadow);display:flex;align-items:center;gap:14px
+  }
+  .heroText{flex:1;min-width:0}
+  .hero h1{font-size:24px;line-height:1.1;margin:0 0 7px}
+  .hero p{margin:0;color:var(--muted);font-size:13px}
+  .heroActions{display:flex;gap:8px;flex-wrap:wrap}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+  .stat{
+    border:1px solid var(--line);border-radius:15px;padding:14px;background:var(--panel)
+  }
+  .stat .k{font-size:12px;color:var(--muted)}
+  .stat .v{font-size:24px;font-weight:800;margin-top:4px}
+  .sectionHead{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 10px}
+  .sectionHead h2{font-size:15px;margin:0}
+  .sectionHead span{font-size:12px;color:var(--muted)}
+  .dropzone{
+    border:1.5px dashed #3b4b70;border-radius:17px;padding:26px;text-align:center;color:var(--muted);background:rgba(255,255,255,.02)
+  }
+  .dropzone.drag{border-color:var(--accent);background:rgba(110,168,255,.08)}
+  .dropzone strong{color:#fff}
+  .gallery{display:grid;gap:11px}
+  .gallery.grid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
+  .gallery.list{grid-template-columns:1fr}
+  .card{
+    position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
+    transition:.15s ease
+  }
+  .card:hover{border-color:#3d4c73;transform:translateY(-1px)}
+  .thumb{
+    aspect-ratio:1/1;background:#0b1020;position:relative;overflow:hidden;display:grid;place-items:center
+  }
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .seq{
+    position:absolute;left:7px;top:7px;padding:4px 7px;border-radius:8px;background:rgba(0,0,0,.62);font-size:11px;font-weight:700
+  }
+  .badge{
+    position:absolute;right:7px;top:7px;padding:4px 7px;border-radius:8px;background:rgba(69,211,162,.14);
+    color:#79ebc5;border:1px solid rgba(69,211,162,.28);font-size:10px
+  }
+  .cardInfo{padding:10px}
+  .name{font-size:12px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{font-size:10px;color:var(--muted);margin-top:3px;display:flex;justify-content:space-between;gap:8px}
+  .cardControls{display:flex;gap:5px;padding:0 10px 10px}
+  .iconBtn{
+    flex:1;border:1px solid var(--line);background:#0d1425;color:#dce4f3;border-radius:9px;padding:7px 7px;font-size:12px
+  }
+  .iconBtn:hover{background:#1a2540}
+  .iconBtn.delete{color:#ff91a2}
+  .listRow{display:grid;grid-template-columns:64px 50px 1fr auto;align-items:center;gap:12px;padding:9px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  .listRow + .listRow{margin-top:8px}
+  .mini{width:58px;height:58px;border-radius:9px;overflow:hidden;background:#0a0f1c}
+  .mini img{width:100%;height:100%;object-fit:cover}
+  .listSeq{font-size:13px;font-weight:800;color:#bfd0f0}
+  .listMain{min-width:0}
+  .listName{font-size:13px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .listMeta{font-size:11px;color:var(--muted);margin-top:4px}
+  .listControls{display:flex;gap:5px}
+  .empty{
+    min-height:240px;display:grid;place-items:center;text-align:center;border:1px dashed var(--line);border-radius:16px;color:var(--muted)
+  }
+  .emptyIcon{font-size:44px;opacity:.65}
+  .cameraView{height:100%;display:none;flex-direction:column;min-height:0}
+  .cameraView.active{display:flex}
+  .cameraTop{
+    flex:0 0 auto;padding:10px 14px;border-bottom:1px solid var(--line);background:rgba(10,15,29,.88)
+  }
+  .thumbStrip{
+    display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;padding-bottom:3px
+  }
+  .camThumb{width:62px;height:62px;flex:0 0 62px;border-radius:9px;border:2px solid transparent;overflow:hidden;background:#080d17;position:relative}
+  .camThumb img{width:100%;height:100%;object-fit:cover}
+  .camThumb .n{position:absolute;bottom:0;left:0;right:0;padding:3px;background:rgba(0,0,0,.68);font-size:9px;text-align:center}
+  .camStage{min-height:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
+  .videoWrap{
+    width:min(1100px,100%);height:min(68vh,760px);border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#000;position:relative;box-shadow:var(--shadow)
+  }
+  #video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+  .camHud{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;pointer-events:none}
+  .hudBadge{background:rgba(0,0,0,.58);padding:6px 9px;border-radius:10px;font-size:11px}
+  .cameraBottom{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-top:1px solid var(--line);background:rgba(10,15,29,.88);flex-wrap:wrap}
+  .shutter{
+    width:68px;height:68px;border-radius:50%;border:5px solid #dce7fb;background:#5e9cff;box-shadow:0 9px 30px rgba(94,156,255,.3)
+  }
+  .shutter:active{transform:scale(.96)}
+  .modeHint{font-size:11px;color:var(--muted);text-align:center}
+  .noCamera{max-width:580px;text-align:center;padding:35px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+  .noCamera h3{margin:0 0 7px}
+  .noCamera p{color:var(--muted);font-size:13px;line-height:1.5}
+  .status{
+    position:fixed;left:50%;bottom:18px;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+    padding:10px 14px;border-radius:12px;background:#1a2540;border:1px solid #3a4b70;color:#fff;font-size:12px;transition:.2s;z-index:50
+  }
+  .status.show{opacity:1;transform:translate(-50%,0)}
+  .modalBack{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;place-items:center;z-index:40;padding:20px}
+  .modalBack.show{display:grid}
+  .modal{width:min(560px,100%);background:#11182b;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+  .modalHead,.modalFoot{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+  .modalFoot{border-bottom:0;border-top:1px solid var(--line);justify-content:flex-end;gap:8px}
+  .modalBody{padding:16px}
+  .settingGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;color:var(--muted)}
+  .field input,.field select{
+    width:100%;padding:10px 11px;border-radius:10px;border:1px solid var(--line);background:#0d1425;color:#fff;outline:none
+  }
+  .helper{font-size:11px;color:var(--muted);line-height:1.4;margin-top:10px}
+  @media(max-width:900px){
+    .main{grid-template-columns:1fr}
+    aside{display:none}
+    .stats{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:600px){
+    header{padding:0 12px}.brandSub{display:none}.hero{align-items:flex-start;flex-direction:column}
+    .stats{gap:8px}.workspace{padding:11px}.settingGrid{grid-template-columns:1fr}
+    .gallery.grid{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">
+    <div class="brandMark">✦</div>
+    <div>
+      <div class="brandText">SnapPage PDF Studio</div>
+      <div class="brandSub">Capture → arrange → export</div>
+    </div>
+  </div>
+  <div class="headerActions">
+    <div class="pill"><span id="headerCount">0</span> / 200 pages</div>
+    <button class="btn ghost" id="settingsBtn">⚙ Settings</button>
+  </div>
+</header>
+
+<div class="main">
+  <aside>
+    <div class="navTitle">Workspace</div>
+    <button class="navBtn active" data-view="dashboard">
+      <span class="navLeft"><span class="navIcon">⌂</span> Dashboard</span><span class="count" id="sideCount">0</span>
+    </button>
+    <button class="navBtn" data-view="camera">
+      <span class="navLeft"><span class="navIcon">◉</span> Camera</span>
+    </button>
+    <button class="navBtn" id="importSide">
+      <span class="navLeft"><span class="navIcon">＋</span> Add Images</span>
+    </button>
+    <input id="fileInput" type="file" accept="image/*" multiple hidden>
+    <div class="sideCard">
+      <h4>PDF order</h4>
+      <p>The page order follows the gallery sequence. Move images with the ↑ / ↓ controls before exporting.</p>
+      <div class="sideStat"><span>Pages</span><b id="sidePages">0</b></div>
+      <div class="sideStat"><span>Format</span><b id="sideFormat">A4</b></div>
+      <div class="sideStat"><span>Orientation</span><b id="sideOrientation">Auto</b></div>
+    </div>
+    <div class="sideCard">
+      <h4>Camera tips</h4>
+      <p>Allow camera access in the browser. On phones, opening this app over HTTPS or localhost is recommended.</p>
+    </div>
+  </aside>
+
+  <section class="content">
+    <div id="dashboardView" class="workspace">
+      <div class="dashboard">
+        <div class="hero">
+          <div class="heroText">
+            <h1>Document capture dashboard</h1>
+            <p>Collect up to 200 images, preview them instantly, change their sequence, then export everything as a single PDF.</p>
+          </div>
+          <div class="heroActions">
+            <button class="btn" id="openCameraHero">◉ Open Camera</button>
+            <button class="btn primary" id="addHero">＋ Add Images</button>
+            <button class="btn" id="exportHero">⇩ Export PDF</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="k">Captured / imported</div><div class="v" id="statTotal">0</div></div>
+          <div class="stat"><div class="k">Remaining slots</div><div class="v" id="statRemaining">200</div></div>
+          <div class="stat"><div class="k">Current page</div><div class="v" id="statCurrent">—</div></div>
+          <div class="stat"><div class="k">PDF setting</div><div class="v" id="statPdf">A4</div></div>
+        </div>
+
+        <div class="sectionHead">
+          <h2>Gallery</h2>
+          <span id="galleryHint">No images yet</span>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <div style="font-size:28px;margin-bottom:8px">▧</div>
+          <strong>Drop images here</strong><br>
+          <span>or use <u>Add Images</u> to select multiple files</span>
+        </div>
+
+        <div class="toolbar" style="margin-top:12px;border:1px solid var(--line);border-radius:13px;padding:8px;background:var(--panel)">
+          <div style="font-size:12px;color:var(--muted)">Sequence tools</div>
+          <button class="btn" id="moveSelectedUp" disabled>↑ Move up</button>
+          <button class="btn" id="moveSelectedDown" disabled>↓ Move down</button>
+          <button class="btn" id="deleteSelected" disabled>✕ Delete</button>
+          <div class="spacer"></div>
+          <div class="viewSwitch">
+            <button id="gridBtn" class="active">▦ Grid</button>
+            <button id="listBtn">☰ List</button>
+          </div>
+        </div>
+
+        <div id="gallery" class="gallery grid" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <div id="cameraView" class="cameraView">
+      <div class="cameraTop">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div>
+            <div style="font-weight:750;font-size:13px">Camera capture</div>
+            <div class="modeHint">Captured images appear in the strip in page order.</div>
+          </div>
+          <button class="btn danger" id="exitCamera">⇤ Exit Camera</button>
+        </div>
+        <div class="thumbStrip" id="camStrip"></div>
+      </div>
+
+      <div class="camStage">
+        <div id="cameraUnavailable" class="noCamera" style="display:none">
+          <div style="font-size:42px;margin-bottom:10px">◌</div>
+          <h3>Camera unavailable</h3>
+          <p id="cameraMessage">Your browser did not provide camera access. Check permission settings, then try again.</p>
+          <button class="btn primary" id="retryCamera">↻ Try Again</button>
+        </div>
+        <div class="videoWrap" id="videoWrap">
+          <video id="video" autoplay playsinline muted></video>
+          <div class="camHud">
+            <div class="hudBadge">LIVE CAMERA</div>
+            <div class="hudBadge"><span id="camCount">0</span> / 200</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cameraBottom">
+        <button class="btn" id="flipCamera">↺ Flip</button>
+        <button class="shutter" id="captureBtn" aria-label="Capture photo"></button>
+        <button class="btn primary" id="doneCamera">✓ Camera Done</button>
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+
+<div class="status" id="status"></div>
+
+<div class="modalBack" id="settingsModal">
+  <div class="modal">
+    <div class="modalHead"><strong>PDF export settings</strong><button class="btn ghost" id="closeSettings">✕</button></div>
+    <div class="modalBody">
+      <div class="settingGrid">
+        <div class="field">
+          <label>Page size</label>
+          <select id="pageSize">
+            <option value="a4">A4</option>
+            <option value="letter">Letter</option>
+            <option value="legal">Legal</option>
+            <option value="a5">A5</option>
+            <option value="b5">B5</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Orientation</label>
+          <select id="orientation">
+            <option value="auto">Auto per image</option>
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Fit mode</label>
+          <select id="fitMode">
+            <option value="contain">Fit image (no crop)</option>
+            <option value="cover">Fill page (crop edges)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>PDF image quality</label>
+          <select id="quality">
+            <option value="0.92">High</option>
+            <option value="0.82">Balanced</option>
+            <option value="0.70">Smaller file</option>
+          </select>
+        </div>
+      </div>
+      <div class="helper">Each image becomes exactly one PDF page. Page 1 uses the first gallery image, page 2 the second, and so on.</div>
+    </div>
+    <div class="modalFoot">
+      <button class="btn" id="cancelSettings">Cancel</button>
+      <button class="btn primary" id="saveSettings">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="captureCanvas" hidden></canvas>
+
+<!-- jsPDF for one-file PDF export. The app itself is self-contained; PDF generation uses this browser library. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(() => {
+  const MAX = 200;
+  const state = {
+    images: [],
+    selectedIndex: -1,
+    view: 'grid',
+    settings: {
+      pageSize: 'a4',
+      orientation: 'auto',
+      fitMode: 'contain',
+      quality: '0.92'
+    },
+    stream: null,
+    facing: 'environment'
+  };
+
+  const $ = id => document.getElementById(id);
+  const gallery = $('gallery');
+
+  function fmtBytes(bytes){
+    if(!bytes && bytes !== 0) return '';
+    const units = ['B','KB','MB','GB'];
+    let i = 0, n = bytes;
+    while(n >= 1024 && i < units.length-1){n/=1024;i++}
+    return n.toFixed(i ? 1 : 0) + ' ' + units[i];
+  }
+
+  function setStatus(msg){
+    const el = $('status');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(setStatus.t);
+    setStatus.t = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  function updateStats(){
+    const n = state.images.length;
+    $('headerCount').textContent = n;
+    $('sideCount').textContent = n;
+    $('sidePages').textContent = n;
+    $('statTotal').textContent = n;
+    $('statRemaining').textContent = MAX - n;
+    $('statCurrent').textContent = state.selectedIndex >= 0 ? (state.selectedIndex + 1) : '—';
+    $('statPdf').textContent = state.settings.pageSize.toUpperCase();
+    $('sideFormat').textContent = state.settings.pageSize.toUpperCase();
+    $('sideOrientation').textContent = state.settings.orientation[0].toUpperCase() + state.settings.orientation.slice(1);
+    $('camCount').textContent = n;
+    $('galleryHint').textContent = n ? `${n} page${n === 1 ? '' : 's'} • ordered by sequence` : 'No images yet';
+
+    const has = state.selectedIndex >= 0 && n > 0;
+    $('moveSelectedUp').disabled = !has || state.selectedIndex === 0;
+    $('moveSelectedDown').disabled = !has || state.selectedIndex === n - 1;
+    $('deleteSelected').disabled = !has;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  }
+
+  function render(){
+    updateStats();
+    gallery.className = 'gallery ' + state.view;
+    gallery.innerHTML = '';
+
+    if(!state.images.length){
+      gallery.innerHTML = `
+        <div class="empty" style="grid-column:1/-1">
+          <div>
+            <div class="emptyIcon">▧</div>
+            <div style="font-weight:700;color:#fff">Your gallery is empty</div>
+            <div style="font-size:12px;margin-top:5px">Open the camera or add image files to build your PDF.</div>
+          </div>
+        </div>`;
+      renderCamStrip();
+      return;
+    }
+
+    state.images.forEach((img, i) => {
+      if(state.view === 'grid'){
+        const card = document.createElement('div');
+        card.className = 'card';
+        if(i === state.selectedIndex) card.style.borderColor = '#6ea8ff';
+        card.innerHTML = `
+          <div class="thumb" data-index="${i}">
+            <img src="${img.src}" alt="">
+            <div class="seq">PAGE ${i+1}</div>
+            ${img.source === 'camera' ? '<div class="badge">CAMERA</div>' : ''}
+          </div>
+          <div class="cardInfo">
+            <div class="name" title="${escapeHtml(img.name)}">${escapeHtml(img.name)}</div>
+            <div class="meta"><span>${img.width}×${img.height}</span><span>${fmtBytes(img.size)}</span></div>
+          </div>
+          <div class="cardControls">
+            <button class="iconBtn" data-act="up" data-index="${i}" ${i===0?'disabled':''}>↑</button>
+            <button class="iconBtn" data-act="down" data-index="${i}" ${i===state.images.length-1?'disabled':''}>↓</button>
+            <button class="iconBtn delete" data-act="delete" data-index="${i}">✕</button>
+          </div>`;
+        gallery.appendChild(card);
+      } else {
+        const row = document.createElement('div');
+        row.className = 'listRow';
+        if(i === state.selectedIndex) row.style.borderColor = '#6ea8ff';
+        row.innerHTML = `
+          <div class="mini"><img src="${img.src}" alt=""></div>
+          <div class="listSeq">#${i+1}</div>
+          <div class="listMain">
+            <div class="listName" title="${escapeHtml(img.name)}">${escapeHtml(img.name)}</div>
+            <div class="listMeta">${img.width}×${img.height} • ${fmtBytes(img.size)} ${img.source === 'camera' ? '• camera' : ''}</div>
+          </div>
+          <div class="listControls">
+            <button class="iconBtn" style="flex:none" data-act="up" data-index="${i}" ${i===0?'disabled':''}>↑</button>
+            <button class="iconBtn" style="flex:none" data-act="down" data-index="${i}" ${i===state.images.length-1?'disabled':''}>↓</button>
+            <button class="iconBtn delete" style="flex:none" data-act="delete" data-index="${i}">✕</button>
+          </div>`;
+        gallery.appendChild(row);
+      }
+    });
+    renderCamStrip();
+  }
+
+  function select(i){
+    if(i < 0 || i >= state.images.length) return;
+    state.selectedIndex = i;
+    render();
+  }
+
+  function move(i, dir){
+    const j = i + dir;
+    if(j < 0 || j >= state.images.length) return;
+    [state.images[i], state.images[j]] = [state.images[j], state.images[i]];
+    if(state.selectedIndex === i) state.selectedIndex = j;
+    else if(state.selectedIndex === j) state.selectedIndex = i;
+    render();
+  }
+
+  function removeAt(i){
+    const removed = state.images.splice(i, 1)[0];
+    if(state.selectedIndex === i) {
+      state.selectedIndex = state.images.length ? Math.min(i, state.images.length-1) : -1;
+    } else if(state.selectedIndex > i) state.selectedIndex--;
+    if(removed && removed.src.startsWith('blob:')) URL.revokeObjectURL(removed.src);
+    render();
+  }
+
+  gallery.addEventListener('click', e => {
+    const target = e.target.closest('[data-index]');
+    if(!target) return;
+    const i = Number(target.dataset.index);
+    const act = target.dataset.act;
+    if(act === 'up') return move(i,-1);
+    if(act === 'down') return move(i,1);
+    if(act === 'delete') return removeAt(i);
+    select(i);
+  });
+
+  $('moveSelectedUp').onclick = () => move(state.selectedIndex, -1);
+  $('moveSelectedDown').onclick = () => move(state.selectedIndex, 1);
+  $('deleteSelected').onclick = () => removeAt(state.selectedIndex);
+
+  $('gridBtn').onclick = () => {
+    state.view = 'grid';
+    $('gridBtn').classList.add('active');
+    $('listBtn').classList.remove('active');
+    render();
+  };
+  $('listBtn').onclick = () => {
+    state.view = 'list';
+    $('listBtn').classList.add('active');
+    $('gridBtn').classList.remove('active');
+    render();
+  };
+
+  function addDataImage(src, meta){
+    if(state.images.length >= MAX){
+      setStatus('200-page limit reached.');
+      return false;
+    }
+    state.images.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random(),
+      src,
+      name: meta.name || `Capture ${state.images.length+1}`,
+      width: meta.width || 0,
+      height: meta.height || 0,
+      size: meta.size || 0,
+      source: meta.source || 'file'
+    });
+    return true;
+  }
+
+  async function fileToImage(file){
+    return new Promise((resolve,reject) => {
+      const src = URL.createObjectURL(file);
+      const im = new Image();
+      im.onload = () => {
+        // Keep the object URL as the image source until the document is closed;
+        // this avoids creating giant duplicate data URLs in memory.
+        resolve({src, width:im.naturalWidth, height:im.naturalHeight, size:file.size, name:file.name});
+      };
+      im.onerror = () => { URL.revokeObjectURL(src); reject(new Error('Could not read image')); };
+      im.src = src;
+    });
+  }
+
+  async function addFiles(files){
+    const list = [...files].filter(f => f.type.startsWith('image/'));
+    if(!list.length){ setStatus('No supported image files selected.'); return; }
+    const room = MAX - state.images.length;
+    const use = list.slice(0, room);
+    if(list.length > room) setStatus(`Added ${room} image${room===1?'':'s'}; the 200-page limit was reached.`);
+    let added = 0;
+    for(const file of use){
+      try{
+        const img = await fileToImage(file);
+        if(addDataImage(img.src, {...img,source:'file'})) added++;
+      }catch(err){}
+    }
+    if(added) {
+      if(state.selectedIndex < 0) state.selectedIndex = 0;
+      render();
+      setStatus(`${added} image${added===1?'':'s'} added.`);
+    }
+  }
+
+  $('fileInput').onchange = e => { addFiles(e.target.files); e.target.value = ''; };
+  $('importSide').onclick = () => $('fileInput').click();
+  $('addHero').onclick = () => $('fileInput').click();
+
+  const drop = $('dropzone');
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev,e => {e.preventDefault();drop.classList.add('drag')}));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev,e => {e.preventDefault();drop.classList.remove('drag')}));
+  drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+  drop.addEventListener('click', () => $('fileInput').click());
+
+  // Navigation / camera mode
+  const dashboardView = $('dashboardView');
+  const cameraView = $('cameraView');
+  function switchView(view){
+    document.querySelectorAll('.navBtn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+    if(view === 'camera'){
+      dashboardView.style.display = 'none';
+      cameraView.classList.add('active');
+      startCamera();
+    } else {
+      cameraView.classList.remove('active');
+      dashboardView.style.display = '';
+      stopCamera();
+      render();
+    }
+  }
+  document.querySelectorAll('.navBtn[data-view]').forEach(b => b.onclick = () => switchView(b.dataset.view));
+  $('openCameraHero').onclick = () => switchView('camera');
+  $('exitCamera').onclick = () => switchView('dashboard');
+  $('doneCamera').onclick = () => switchView('dashboard');
+
+  async function startCamera(){
+    stopCamera();
+    $('cameraUnavailable').style.display = 'none';
+    $('videoWrap').style.display = '';
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      return cameraFail('This browser does not expose camera access. Use a current Chrome/Edge/Safari browser.');
+    }
+    try{
+      state.stream = await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:state.facing,width:{ideal:1920},height:{ideal:1080}},
+        audio:false
+      });
+      $('video').srcObject = state.stream;
+    }catch(err){
+      cameraFail('Camera permission was blocked or the camera is already in use. Allow camera access and try again.');
+    }
+  }
+
+  function cameraFail(msg){
+    $('videoWrap').style.display = 'none';
+    $('cameraUnavailable').style.display = '';
+    $('cameraMessage').textContent = msg;
+  }
+
+  function stopCamera(){
+    if(state.stream){
+      state.stream.getTracks().forEach(t => t.stop());
+      state.stream = null;
+    }
+    $('video').srcObject = null;
+  }
+
+  $('retryCamera').onclick = startCamera;
+  $('flipCamera').onclick = () => {
+    state.facing = state.facing === 'environment' ? 'user' : 'environment';
+    startCamera();
+  };
+
+  function renderCamStrip(){
+    const strip = $('camStrip');
+    strip.innerHTML = '';
+    state.images.forEach((img,i) => {
+      const b = document.createElement('button');
+      b.className = 'camThumb';
+      b.style.borderColor = i === state.selectedIndex ? '#6ea8ff' : 'transparent';
+      b.innerHTML = `<img src="${img.src}" alt=""><div class="n">${i+1}</div>`;
+      b.onclick = () => {select(i); b.scrollIntoView({behavior:'smooth',inline:'center'})};
+      strip.appendChild(b);
+    });
+  }
+
+  $('captureBtn').onclick = async () => {
+    if(!state.stream) { setStatus('Camera is not active.'); return; }
+    if(state.images.length >= MAX){ setStatus('200-page limit reached.'); return; }
+    const video = $('video');
+    if(video.readyState < 2){ setStatus('Camera is still starting…'); return; }
+    const canvas = $('captureCanvas');
+    const scale = Math.min(1, 1920 / video.videoWidth);
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    const ctx = canvas.getContext('2d');
+    if(state.facing === 'user'){
+      ctx.translate(canvas.width,0); ctx.scale(-1,1);
+    }
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    const src = canvas.toDataURL('image/jpeg', Number(state.settings.quality));
+    addDataImage(src, {
+      name:`Camera ${String(state.images.length+1).padStart(3,'0')}.jpg`,
+      width:canvas.width,height:canvas.height,size:0,source:'camera'
+    });
+    state.selectedIndex = state.images.length - 1;
+    renderCamStrip();
+    updateStats();
+    const latest = $('camStrip').lastElementChild;
+    if(latest) latest.scrollIntoView({behavior:'smooth',inline:'end'});
+    setStatus(`Page ${state.images.length} captured.`);
+  };
+
+  // Settings
+  function openSettings(){
+    $('pageSize').value = state.settings.pageSize;
+    $('orientation').value = state.settings.orientation;
+    $('fitMode').value = state.settings.fitMode;
+    $('quality').value = state.settings.quality;
+    $('settingsModal').classList.add('show');
+  }
+  $('settingsBtn').onclick = openSettings;
+  $('closeSettings').onclick = $('cancelSettings').onclick = () => $('settingsModal').classList.remove('show');
+  $('saveSettings').onclick = () => {
+    state.settings.pageSize = $('pageSize').value;
+    state.settings.orientation = $('orientation').value;
+    state.settings.fitMode = $('fitMode').value;
+    state.settings.quality = $('quality').value;
+    $('settingsModal').classList.remove('show');
+    updateStats();
+    setStatus('PDF settings saved.');
+  };
+
+  // PDF export
+  const PAGE_SIZES_MM = {
+    a4:[210,297], letter:[215.9,279.4], legal:[215.9,355.6], a5:[148,210], b5:[176,250]
+  };
+
+  function loadImage(src){
+    return new Promise((resolve,reject) => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = reject;
+      im.src = src;
+    });
+  }
+
+  async function exportPdf(){
+    if(!state.images.length){setStatus('Add at least one image first.');return;}
+    if(!window.jspdf){setStatus('PDF engine could not load. Check your internet connection and retry.');return;}
+    const {jsPDF} = window.jspdf;
+    const base = PAGE_SIZES_MM[state.settings.pageSize];
+    let doc = null;
+
+    try{
+      for(let i=0;i<state.images.length;i++){
+        const item = state.images[i];
+        const im = await loadImage(item.src);
+        const naturalW = im.naturalWidth || im.width;
+        const naturalH = im.naturalHeight || im.height;
+        let orientation = state.settings.orientation;
+        if(orientation === 'auto') orientation = naturalW >= naturalH ? 'landscape' : 'portrait';
+        const pageW = orientation === 'landscape' ? base[1] : base[0];
+        const pageH = orientation === 'landscape' ? base[0] : base[1];
+
+        if(!doc) doc = new jsPDF({orientation, unit:'mm', format:[pageW,pageH], compress:true});
+        else doc.addPage([pageW,pageH], orientation);
+
+        // White page background
+        doc.setFillColor(255,255,255);
+        doc.rect(0,0,pageW,pageH,'F');
+
+        const margin = 0;
+        const imageWmm = pageW - margin*2;
+        const imageHmm = pageH - margin*2;
+        const imageRatio = naturalW/naturalH;
+        const pageRatio = imageWmm/imageHmm;
+        let drawW, drawH, x, y;
+
+        if(state.settings.fitMode === 'cover'){
+          if(imageRatio > pageRatio){ drawH = imageHmm; drawW = drawH*imageRatio; }
+          else { drawW = imageWmm; drawH = drawW/imageRatio; }
+          x = (pageW-drawW)/2;
+          y = (pageH-drawH)/2;
+        } else {
+          if(imageRatio > pageRatio){ drawW=imageWmm; drawH=drawW/imageRatio; }
+          else { drawH=imageHmm; drawW=drawH*imageRatio; }
+          x=(pageW-drawW)/2;
+          y=(pageH-drawH)/2;
+        }
+        doc.addImage(item.src,'JPEG',x,y,drawW,drawH,undefined,'FAST');
+        // Tiny optional page marker in metadata only; no visible watermark.
+        if(i % 5 === 0) await new Promise(r => setTimeout(r,0));
+      }
+
+      const stamp = new Date();
+      const ymd = `${stamp.getFullYear()}-${String(stamp.getMonth()+1).padStart(2,'0')}-${String(stamp.getDate()).padStart(2,'0')}`;
+      doc.save(`SnapPage-${ymd}-${state.images.length}pages.pdf`);
+      setStatus(`PDF exported: ${state.images.length} pages.`);
+    }catch(err){
+      console.error(err);
+      setStatus('PDF export failed for one of the images.');
+    }
+  }
+
+  $('exportHero').onclick = exportPdf;
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if(e.target.matches('input,select,textarea')) return;
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='o'){
+      e.preventDefault(); $('fileInput').click();
+    }
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='e'){
+      e.preventDefault(); exportPdf();
+    }
+    if(e.key==='ArrowUp' && state.selectedIndex >= 0) move(state.selectedIndex,-1);
+    if(e.key==='ArrowDown' && state.selectedIndex >= 0) move(state.selectedIndex,1);
+    if(e.key==='Escape' && $('settingsModal').classList.contains('show')) $('settingsModal').classList.remove('show');
+  });
+
+  // Start
+  render();
+})();
+</script>
+</body>
+</html>
